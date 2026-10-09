@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JARVIS</title>
+<style>
+body{background:#000;color:#00ffff;text-align:center;font-family:sans-serif;padding:15px}
+h1{font-size:36px;text-shadow:0 0 15px #0ff}
+button{padding:14px 28px;font-size:18px;background:#0ff;border:none;border-radius:30px;margin:8px;font-weight:bold}
+input{width:92%;padding:12px;border-radius:10px;border:2px solid #0ff;background:#111;color:#fff;margin:5px}
+#ans{margin-top:15px;text-align:left;background:#111;padding:15px;border-radius:10px;min-height:100px;border:1px solid #0ff}
+</style>
+</head>
+<body>
+<h1>J.A.R.V.I.S</h1>
+<input id="key" placeholder="Gemini API Key yaha paste karo">
+<br>
+<input id="q" placeholder="Bolo Sir, kya kaam hai?">
+<br><br>
+<button onclick="ask()">ASK JARVIS</button>
+<button onclick="mic()">🎤 BOLO</button>
+<div id="ans">Sir system ready hai...</div>
+<script>
+let rec;
+function mic(){
+ let SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ rec=new SR(); rec.lang='hi-IN';
+ rec.onresult=e=>{document.getElementById('q').value=e.results[0][0].transcript; ask();};
+ rec.start(); document.getElementById('ans').innerHTML="Sun raha hu Sir...";
+}
+async function ask(){
+ let k=document.getElementById('key').value.trim();
+ let q=document.getElementById('q').value.trim();
+ if(!k) return alert('Pehle API Key dalo: aistudio.google.com/app/apikey');
+ if(!q) return alert('Sawal likho Sir');
+ localStorage.setItem('k',k);
+ document.getElementById('ans').innerHTML="Soch raha hu Sir...";
+ let r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${k}`,{
+  method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({contents:[{parts:[{text:`You are JARVIS Iron Man assistant. Reply in Hinglish respectful. User: ${q}`}]}]})
+ });
+ let d=await r.json();
+ let t=d.candidates?.[0]?.content?.parts?.[0]?.text||"Error Sir, Key check karo";
+ document.getElementById('ans').innerHTML=t;
+ speechSynthesis.speak(new SpeechSynthesisUtterance(t));
+}
+window.onload=()=>{let k=localStorage.getItem('k'); if(k) document.getElementById('key').value=k;}
+</script>
+</body>
+</html>
